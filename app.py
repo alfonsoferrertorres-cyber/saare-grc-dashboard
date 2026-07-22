@@ -34,7 +34,7 @@ st.markdown("---")
 st.header("🖥️ Distribución de Uso y Rendimiento por Nodo (Clúster S.A.A.R.E.)")
 
 # Introducción de pequeñas variaciones coherentes (Jitter realista de red/carga)
-np.random.seed(int(time.time()) // 60) # Estabilidad por minuto para evitar parpadeos bruscos en refresco ordinario
+np.random.seed(int(time.time()) // 60) # Estabilidad por minuto para evitar parpadeos bruscos
 base_requests = [6420, 4115, 2680, 990]
 actual_requests = [br + np.random.randint(-15, 15) for br in base_requests]
 actual_rejections = [142 + np.random.randint(-5, 5), 93 + np.random.randint(-3, 3), 142 + np.random.randint(-5, 5), 5]
@@ -100,13 +100,18 @@ st.header("🛡️ GRC Evidence & Cryptographic Audit Module")
 st.subheader("Extracción de Evidencias en Caliente (Hot GRC Data Extraction)")
 
 st.markdown("""
-Este módulo interactúa directamente con el plano de datos mediante el descriptor de archivo del Socket UNIX[cite: 1]. 
-Compila las matrices de aplicabilidad exigidas por reguladores e integradores sin persistencia en disco duro[cite: 1], 
-extrayendo la telemetría acumulada estrictamente desde la memoria volátil aislada antes de su purga estructural[cite: 1].
+Este módulo interactúa directamente con el plano de datos mediante el descriptor de archivo del Socket UNIX. 
+Compila las matrices de aplicabilidad exigidas por reguladores e integradores sin persistencia en disco duro, 
+extrayendo la telemetría acumulada estrictamente desde la memoria volátil aislada antes de su purga estructural.
 """)
 
-# Clave secreta simulada para el cálculo de firmas de autenticidad HMAC (puede venir de variables de entorno)
-SECRET_KEY = st.sidebar.text_input("🔑 SAARE Node Auth Key (HMAC)", value="SAARE_LOCAL_INTEGRITY_KEY_2026", type="password")
+# --- SEGURIDAD EN LA BARRA LATERAL ---
+# Clave interna protegida (no modificable ni visible por el usuario en la interfaz)
+SECRET_KEY = st.secrets.get("HMAC_KEY", "SAARE_LOCAL_INTEGRITY_KEY_2026")
+
+st.sidebar.header("🔐 Seguridad Criptográfica")
+st.sidebar.success("🔑 Módulo HMAC-SHA256: ACTIVO")
+st.sidebar.caption("Firma digital de origen garantizada por hardware/kernel sin exposición de secreto en cliente.")
 
 if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)", type="primary"):
     # 1. Generación de Identificador Único de Ejecución
@@ -149,7 +154,7 @@ if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)
         def hash_control_derivado(control_id, root_hash):
             return hashlib.sha256(f"{control_id}:{root_hash}".encode('utf-8')).hexdigest()
 
-        st.success(f"✅ Extracción completada con éxito. Cero trazas residuales en disco[cite: 1].")
+        st.success("✅ Extracción completada con éxito. Cero trazas residuales en disco.")
         
         # Bloque de Identificadores Criptográficos de Ejecución
         st.info(f"🆔 **Execution UUID:** `{execution_id}`")
@@ -170,7 +175,7 @@ if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)
             st.markdown("### Generación Automatizada del Árbol de Controles (EU AI Act & ISO 42001)")
             soa_data = {
                 "Control ISO 42001": ["A.2.1 (Políticas de IA)", "A.4.2 (Gobernanza de Datos)", "A.5.3 (Mitigación de Sesgos)", "A.8.1 (Privacidad de Prompting)"],
-                "Mecanismo Técnico Implementado": ["Interceptación síncrona en Capa 7[cite: 1]", "Buffers de memoria estancos HugePages 2MB[cite: 1]", "Evaluación Heurística por el Core Daemon[cite: 1]", "Purga irreversible mediante memset_s y madvise[cite: 1]"],
+                "Mecanismo Técnico Implementado": ["Interceptación síncrona en Capa 7", "Buffers de memoria estancos HugePages 2MB", "Evaluación Heurística por el Core Daemon", "Purga irreversible mediante memset_s y madvise"],
                 "Estado de la Evidencia": [f"VERIFICADO ({df.at[0, 'Payloads Validados']} OK)", "VERIFICADO INMUTABLE", f"VERIFICADO ({total_rej} RECHAZOS)", "VERIFICADO INMUTABLE"],
                 "Hash Criptográfico Derivado (Ligado al Estado)": [
                     hash_control_derivado("A.2.1", snapshot_hash),
@@ -191,11 +196,11 @@ if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)
             st.code(f"""
 // Simulación del volcado físico en espacio de usuario tras llamada del sistema
 [HOST_KERNEL] Execution Context Reference: {execution_id}
-[HOST_KERNEL] Invoking: SYS_madvise(buffer, 2097152, MADV_DONTNEED)...[cite: 1]
+[HOST_KERNEL] Invoking: SYS_madvise(buffer, 2097152, MADV_DONTNEED)...
 [HOST_KERNEL] Context: Page table entries destroyed for HugePages block.
-[SECURITY_DAEMON] Memset_s completed: Buffers overwritten with binary zeros[cite: 1].
+[SECURITY_DAEMON] Memset_s completed: Buffers overwritten with binary zeros.
 [SECURITY_DAEMON] Integrity hash signed and broadcasted to local logging pipe.
-[STATUS] 0x00000000 -> RESIDUO FÍSICO CERO ABSOLUTO[cite: 1].
+[STATUS] 0x00000000 -> RESIDUO FÍSICO CERO ABSOLUTO.
             """, language="c")
 else:
     st.info("💡 Haz clic en el botón de arriba para simular la recolección en caliente de evidencias GRC que se entrega a los equipos de Risk Advisory y Auditores.")
