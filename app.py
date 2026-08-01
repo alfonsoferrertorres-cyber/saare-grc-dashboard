@@ -7,19 +7,27 @@ import json
 import hashlib
 import hmac
 import uuid
+import base64
+from datetime import datetime, timedelta, timezone
+from nacl.signing import SigningKey
 
-# Configuración de página perimetral
+# ==============================================================================
+# CONFIGURACIÓN GENERAL & CONSTANTES
+# ==============================================================================
 st.set_page_config(
-    page_title="MS3V S.A.A.R.E. | Motor Lógico & GRC",
+    page_title="MS3V S.A.A.R.E. | Motor Lógico, GRC & Evaluation Hub",
     page_icon="🧠",
     layout="wide"
 )
 
-# Título del panel
+INSTALLER_URL = "https://github.com/alfonsoferrertorres-cyber/saare-grc-dashboard/releases/download/v7.0.0/SAARE_PRO_v7.0_Setup.exe"
+DEFAULT_PRIVATE_KEY_HEX = "b3986ec67e58a25c11bc32c1c38096f9cf5c6eeebf35e9aaae65f49437ee9df8"
+SECRET_KEY = st.secrets.get("HMAC_KEY", "SAARE_LOCAL_INTEGRITY_KEY_2026")
+
+# Título y cabecera del panel
 st.title("SAARE Protocol: Integrity, Deployment & GRC Control Panel")
 st.caption("Titular: Alfonso Ferrer Torres | ID Fiscal: 48553065L | Gabinete Técnico MS3V")
 
-# Estado de salud del sistema
 col_status, col_meta = st.columns([2, 1])
 with col_status:
     st.success("🟢 ESTADO GLOBAL DEL PROTOCOLO: ACTIVO (GO) / STATELESS MODE")
@@ -29,12 +37,86 @@ with col_meta:
 st.markdown("---")
 
 # ==============================================================================
+# SECCIÓN 0: EMBUDO DE ADQUISICIÓN Y SOLICITUD DE EVALUACIÓN (KIT ENTERPRISE)
+# ==============================================================================
+with st.expander("🚀 **Solicitar Kit de Evaluación Enterprise (Instalador .exe + Licencia 7 Días)**", expanded=True):
+    st.markdown("""
+    Complete el formulario para obtener acceso instantáneo al paquete ejecutable de **S.A.A.R.E. v7.0 PRO** y a su token criptográfico `saare.lic` generado al vuelo.
+    """)
+    
+    with st.form("trial_funnel_form"):
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            nombre_solicitante = st.text_input("Nombre y Apellidos del Auditor / Responsable *")
+            email_solicitante = st.text_input("Correo Corporativo *")
+        with col_f2:
+            empresa_solicitante = st.text_input("Organización / Empresa *")
+            sector_solicitante = st.selectbox("Sector de Actividad", ["Banca & Finanzas", "Salud / Biotech", "Administración Pública", "Auditoría / Consultoría GRC", "Otros"])
+        
+        st.caption("🔒 Generación transparente bajo RGPD e ISO 42001. No se realiza almacenamiento persistente de credenciales.")
+        btn_generar_kit = st.form_submit_button("🔑 Generar Licencia Personalizada y Descargar Software", use_container_width=True)
+
+    if btn_generar_kit:
+        if not email_solicitante or not empresa_solicitante:
+            st.error("⚠️ Por favor, complete los campos obligatorios (Correo Corporativo y Empresa).")
+        else:
+            try:
+                private_key_hex = st.secrets.get("SAARE_PRIVATE_KEY", DEFAULT_PRIVATE_KEY_HEX)
+                
+                # Payload de la Licencia
+                now_utc = datetime.now(timezone.utc)
+                exp_date = (now_utc + timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+                
+                payload = {
+                    "client_id": empresa_solicitante,
+                    "email": email_solicitante,
+                    "tier": "SAARE_TRIAL_7D",
+                    "type": "SAARE_TRIAL_7D",
+                    "modules": ["ACTIVE_SHIELD", "AUDITOR_SUITE", "SAARE_GOVERN", "SAARE_ASSURE"],
+                    "expires_at": exp_date,
+                    "issued_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+                }
+
+                # Firma Criptográfica Ed25519
+                canonical_payload = json.dumps(payload, separators=(',', ':'), sort_keys=True).encode('utf-8')
+                signing_key = SigningKey(bytes.fromhex(private_key_hex))
+                signed_data = signing_key.sign(canonical_payload)
+                signature_b64 = base64.b64encode(signed_data.signature).decode('utf-8')
+
+                lic_content = json.dumps({
+                    "payload": payload,
+                    "signature": signature_b64
+                }, indent=2)
+
+                st.balloons()
+                st.success(f"✅ Licencia criptográfica Ed25519 emitida exitosamente para **{empresa_solicitante}**.")
+
+                c_dl1, c_dl2 = st.columns(2)
+                with c_dl1:
+                    st.markdown("**1. Software Base**")
+                    st.link_button("📥 Descargar Setup (.exe)", INSTALLER_URL, type="primary", use_container_width=True)
+                with c_dl2:
+                    st.markdown("**2. Fichero de Licencia Ed25519**")
+                    st.download_button(
+                        label="🔑 Descargar saare.lic",
+                        data=lic_content,
+                        file_name="saare.lic",
+                        mime="application/json",
+                        use_container_width=True
+                    )
+
+                st.info("💡 **Instrucciones:** Instale el ejecutable en su entorno Windows local, ejecute la suite e importe su archivo `saare.lic` generado.")
+            except Exception as e:
+                st.error(f"Error en el motor criptográfico de emisión: {e}")
+
+st.markdown("---")
+
+# ==============================================================================
 # SECCIÓN 1: CUADRO DE MANDO DE INFRAESTRUCTURA (MÉTRICAS Y CLÚSTER)
 # ==============================================================================
 st.header("🖥️ Distribución de Uso y Rendimiento por Nodo (Clúster S.A.A.R.E.)")
 
-# Introducción de pequeñas variaciones coherentes (Jitter realista de red/carga)
-np.random.seed(int(time.time()) // 60) # Estabilidad por minuto para evitar parpadeos bruscos
+np.random.seed(int(time.time()) // 60)
 base_requests = [6420, 4115, 2680, 990]
 actual_requests = [br + np.random.randint(-15, 15) for br in base_requests]
 actual_rejections = [142 + np.random.randint(-5, 5), 93 + np.random.randint(-3, 3), 142 + np.random.randint(-5, 5), 5]
@@ -53,14 +135,12 @@ data = {
 df = pd.DataFrame(data)
 st.dataframe(df, use_container_width=True)
 
-# Resumen rápido de efectividad del filtrado perimetral
 total_req = int(df["Peticiones Totales"].sum())
 total_val = int(df["Payloads Validados"].sum())
 total_rej = int(df["Rechazos Semánticos (Bloqueados)"].sum())
 
 st.markdown(f"**Métricas Consolidadas del Clúster:** Procesadas: **{total_req}** | Validadas: **{total_val}** | Amenazas/Sesgos Bloqueados: **{total_rej}**")
 
-# Gráficos de Rendimiento y Latencia (Altair)
 col1, col2 = st.columns(2)
 
 with col1:
@@ -105,28 +185,21 @@ Compila las matrices de aplicabilidad exigidas por reguladores e integradores si
 extrayendo la telemetría acumulada estrictamente desde la memoria volátil aislada antes de su purga estructural.
 """)
 
-# --- SEGURIDAD EN LA BARRA LATERAL ---
-# Clave interna protegida (no modificable ni visible por el usuario en la interfaz)
-SECRET_KEY = st.secrets.get("HMAC_KEY", "SAARE_LOCAL_INTEGRITY_KEY_2026")
-
 st.sidebar.header("🔐 Seguridad Criptográfica")
 st.sidebar.success("🔑 Módulo HMAC-SHA256: ACTIVO")
 st.sidebar.caption("Firma digital de origen garantizada por hardware/kernel sin exposición de secreto en cliente.")
 
 if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)", type="primary"):
-    # 1. Generación de Identificador Único de Ejecución
     execution_id = str(uuid.uuid4())
     current_epoch = str(time.time())
     
-    # Jitter dinámico instantáneo para la ráfaga de la extracción
     extraction_latency = round(float(np.random.normal(1.16, 0.02)), 3)
     extraction_tokens = int(np.random.randint(3900, 4300))
     extraction_ms = int(np.random.randint(38, 46))
 
     with st.spinner("Conectando con /var/run/saare_core.sock e invocando matrices de aplicabilidad..."):
-        time.sleep(1.0) # Bloqueo síncrono controlado
+        time.sleep(1.0)
         
-        # 2. Construcción Estructurada de la Evidencia Completa (Snapshot)
         snapshot = {
             "execution_id": execution_id,
             "generated_at": current_epoch,
@@ -143,20 +216,16 @@ if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)
             }
         }
         
-        # Serialización canónica y determinista
         snapshot_json = json.dumps(snapshot, sort_keys=True, separators=(",", ":"))
         
-        # 3. Cómputo de la Raíz de Integridad (SHA-256) y Autenticidad (HMAC)
         snapshot_hash = hashlib.sha256(snapshot_json.encode('utf-8')).hexdigest()
         signature_hmac = hmac.new(SECRET_KEY.encode('utf-8'), snapshot_json.encode('utf-8'), hashlib.sha256).hexdigest()
         
-        # Función jerárquica para ligar los controles individuales al Snapshot raíz
         def hash_control_derivado(control_id, root_hash):
             return hashlib.sha256(f"{control_id}:{root_hash}".encode('utf-8')).hexdigest()
 
         st.success("✅ Extracción completada con éxito. Cero trazas residuales en disco.")
         
-        # Bloque de Identificadores Criptográficos de Ejecución
         st.info(f"🆔 **Execution UUID:** `{execution_id}`")
         
         c_meta1, c_meta2 = st.columns(2)
@@ -168,7 +237,6 @@ if st.button("⚡ Ejecutar Extracción GRC (Hot Data Extraction via UNIX Socket)
         ev_col2.metric(label="Estado de Memoria RAM", value="0.00% Residuo", delta="SYS_madvise (MADV_DONTNEED)")
         ev_col3.metric(label="Muestra de Tokens Evaluada", value=f"{extraction_tokens} tks", delta=f"{extraction_ms} ms Pipeline")
         
-        # Tabs de Inspección Técnica Avanzada para Auditores (Deloitte/Telefónica Tech)
         tab1, tab2, tab3 = st.tabs(["📋 Declaración de Aplicabilidad (SoA)", "🧬 Pipeline Loopback Unix Socket", "🧼 Registro Ephemeral de RAM"])
         
         with tab1:
