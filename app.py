@@ -19,7 +19,7 @@ st.set_page_config(
 
 SECRET_KEY = st.secrets.get("HMAC_KEY", "SAARE_LOCAL_INTEGRITY_KEY_2026")
 
-# Título y cabecera corporativa limpia (Sin PII)
+# Título y cabecera corporativa
 st.title("SAARE Protocol: Integrity, Deployment & GRC Control Panel")
 st.caption("Titular: MS3V S.A.A.R.E. SL | ISO 42001 & EU AI Act Compliance Node | Gabinete Técnico MS3V")
 
@@ -32,33 +32,10 @@ with col_meta:
 st.markdown("---")
 
 # ==============================================================================
-# SECCIÓN DE REDIRECCIÓN A PORTAL COMERCIAL (SIN FORMULARIO)
-# ==============================================================================
-st.markdown("""
-    <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
-                border: 1px solid #0284C7; border-radius: 14px; padding: 20px 24px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.15);
-                display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-        <div>
-            <h3 style="margin: 0 0 6px 0; color: #38BDF8; font-size: 1.2rem; font-weight: 800;">
-                🌐 Consola Pública de Telemetría L7 PEP en Tiempo Real
-            </h3>
-            <p style="margin: 0; font-size: 0.92rem; color: #E2E8F0; line-height: 1.5;">
-                Esta interfaz valida la latencia determinista en memoria volátil (~1,16 ms) del motor <b>S.A.A.R.E.</b>. 
-                Para solicitar una licencia de evaluación (7 días) o adquirir una suscripción corporativa, accede a la web oficial.
-            </p>
-        </div>
-        <div>
-            <a href="https://saare.es/#soluciones" target="_blank" style="background: #0284C7; color: #FFFFFF; padding: 12px 22px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 0.88rem; white-space: nowrap; display: inline-block;">
-                ⚡ Ir a saare.es →
-            </a>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
-
-# ==============================================================================
-# SECCIÓN 1: CUADRO DE MANDO DE INFRAESTRUCTURA (TELEMETRÍA DE CLÚSTER)
+# SECCIÓN 1 (A LA CABEZA): MANDO DE INFRAESTRUCTURA & TELEMETRÍA DE CLÚSTER
 # ==============================================================================
 st.header("🖥️ Distribución de Uso y Rendimiento por Nodo (Clúster S.A.A.R.E.)")
+st.caption("Inspección semántica ex-ante en Capa 7 con latencia determinista en memoria volátil (~1,16 ms).")
 
 np.random.seed(int(time.time()) // 60)
 base_requests = [6420, 4115, 2680, 990]
@@ -97,7 +74,7 @@ with col1:
     bar_chart = alt.Chart(chart_data_bar).mark_bar(color="#0066cc").encode(
         x=alt.X('Nodo:N', axis=alt.Axis(labelAngle=0, title=None)),
         y='Peticiones Totales:Q'
-    ).properties(height=280)
+    ).properties(height=260)
     
     st.altair_chart(bar_chart, use_container_width=True)
 
@@ -111,14 +88,71 @@ with col2:
     line_chart = alt.Chart(chart_data_line).mark_line(color="#29b5e8", point=True).encode(
         x=alt.X('Nodo:N', axis=alt.Axis(labelAngle=0, title=None)),
         y=alt.Y('Latencia (ms):Q', scale=alt.Scale(domain=[1.0, 1.3]))
-    ).properties(height=280)
+    ).properties(height=260)
     
     st.altair_chart(line_chart, use_container_width=True)
 
 st.markdown("---")
 
 # ==============================================================================
-# SECCIÓN 2: MÓDULO DE DEMOSTRACIÓN GRC (EXTRACCIÓN VIRTUAL EN MEMORIA)
+# SECCIÓN 2: CERTIFICACIÓN TÉCNICA E INTEGRIDAD DE PROPIEDAD INTELECTUAL (IP)
+# ==============================================================================
+st.header("🏆 Certificación de Integridad Algorítmica & Documentación Homologada")
+
+doc_col1, doc_col2 = st.columns([1, 1])
+
+with doc_col1:
+    st.markdown("""
+    <div style="background-color: #F8FAFC; border: 1px solid #E2E8F0; padding: 20px; border-radius: 12px; height: 100%;">
+        <h4 style="margin-top:0; color: #0F172A;">📜 Certificado Oficial de Propiedad Intelectual</h4>
+        <p style="font-size: 0.9rem; color: #475569;">
+            <b>Registro:</b> RPI-2026-SAARE-0914X<br>
+            <b>Evaluación Analítica:</b> Similitud estructural &Delta;=0.0024%<br>
+            <b>Dictamen:</b> Ausencia absoluta de plagio de código, vulneración de patentes o activos industriales preexistentes.
+        </p>
+        <p style="font-size: 0.85rem; color: #64748B;">
+            <b>ID Ejecución:</b> SAARE. VALIDATED IP AUDIT 2026 0610 0154
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+with doc_col2:
+    st.markdown("### 📄 Descarga de Dictámenes en PDF")
+    
+    st.markdown("""
+    * 📄 **[Technical Whitepaper V7.0 (PDF)](https://saare.es/Whitepaper_Tecnico_SAARE_v7.pdf)**: Especificación ex-ante en Capa 7 y motor Zero-Disk.
+    * 📜 **[Framework V4 ISO 42001 (PDF)](https://saare.es/SAARE_AI_Governance_Framework_V4.pdf)**: Estándar operativo de gobernanza de IA.
+    * 📋 **[Soberanía Algorítmica & Marco B2B (PDF)](https://saare.es/Derechos_Uso_y_Soberania_Algoritmica_SAARE.pdf)**: Dictamen de exención de desistimiento y activos intangibles.
+    * 🏆 **[Certificado de Integridad IP (PNG)](https://saare.es/CERTIFICADO%20DE%20INTEGRIDAD%20SAARE.png)**: Documento oficial de acreditación RPI.
+    """)
+
+st.markdown("---")
+
+# ==============================================================================
+# SECCIÓN DE REDIRECCIÓN Y ACCESO COMERCIAL
+# ==============================================================================
+st.markdown("""
+    <div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+                border: 1px solid #0284C7; border-radius: 14px; padding: 20px 24px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.15);
+                display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h3 style="margin: 0 0 6px 0; color: #38BDF8; font-size: 1.2rem; font-weight: 800;">
+                🌐 Consola Pública de Telemetría L7 PEP en Tiempo Real
+            </h3>
+            <p style="margin: 0; font-size: 0.92rem; color: #E2E8F0; line-height: 1.5;">
+                Para solicitar una licencia de evaluación (7 días) o adquirir una suscripción corporativa con firma Ed25519, accede al portal comercial.
+            </p>
+        </div>
+        <div>
+            <a href="https://saare.es/#soluciones" target="_blank" style="background: #0284C7; color: #FFFFFF; padding: 12px 22px; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 0.88rem; white-space: nowrap; display: inline-block;">
+                ⚡ Ir a saare.es →
+            </a>
+        </div>
+    </div>
+""", unsafe_allow_html=True)
+
+# ==============================================================================
+# SECCIÓN 3: MÓDULO DE DEMOSTRACIÓN GRC (EXTRACCIÓN VIRTUAL EN MEMORIA)
 # ==============================================================================
 st.header("🛡️ GRC Evidence & Cryptographic Audit Module")
 st.subheader("Extracción de Evidencias en Caliente (Hot GRC Data Extraction)")
@@ -132,6 +166,11 @@ extrayendo la telemetría acumulada estrictamente desde la memoria volátil aisl
 st.sidebar.header("🔐 Seguridad Criptográfica")
 st.sidebar.success("🔑 Módulo HMAC-SHA256: ACTIVO")
 st.sidebar.caption("Firma digital de origen garantizada por hardware/kernel sin exposición de secreto en cliente.")
+st.sidebar.markdown("---")
+st.sidebar.markdown("📜 **Documentación Oficial:**")
+st.sidebar.markdown("- [Framework V4 PDF](https://saare.es/SAARE_AI_Governance_Framework_V4.pdf)")
+st.sidebar.markdown("- [Whitepaper V7 PDF](https://saare.es/Whitepaper_Tecnico_SAARE_v7.pdf)")
+st.sidebar.markdown("- [Derechos y Soberanía PDF](https://saare.es/Derechos_Uso_y_Soberania_Algoritmica_SAARE.pdf)")
 st.sidebar.markdown("---")
 st.sidebar.markdown("🌐 **Portal Comercial:**")
 st.sidebar.markdown("[👉 Visitar saare.es](https://saare.es/)")
